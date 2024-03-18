@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人粘贴板</title>
+  <style>
+    *{
+      margin: 0;
+      padding: 0;
+    }
+    .page-value {
+      width: 100vw;
+      box-sizing: border-box;
+      padding: 0 50px;
+    }
+
+    .text-area {
+      width: 100%;
+      height: 100px;
+      padding: 10px;
+    }
+
+    .value-list {
+      width: 100%;
+    }
+
+    .value-item {
+      width: 100%;
+      margin: 10px 0;
+      border: 1px solid #333;
+      border-radius: 10px;
+      box-sizing: border-box;
+      padding: 20px;
+      transition: all .3s;
+      white-space: pre-line;
+    }
+
+    .value-item:hover {
+      background-color: #333;
+      color: #fff;
+    }
+
+    .tip{
+      width: 100vw;
+      text-align: center;
+      background-color: #F9C01C;
+      color: #fff;
+      padding: 10px 0;
+      box-sizing: border-box;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="tip">
+    1. 右键获取粘贴板内容。2. 双击记录内容。3. 点击内容复制到粘贴板。
+  </div>
+  <div class="page-value">
+    <textarea class="text-area"></textarea>
+    <div class="value-list"> </div>
+  </div>
+  <script>
+    getData()
+    const textArea = document.querySelector('.text-area')
+    const valueListDom = document.querySelector('.value-list')
+    let valueList = []
+    document.addEventListener('contextmenu', (e) => {
+      e.preventDefault()
+      getClipboardData()
+    })
+
+    document.addEventListener('dblclick', (e) => {
+      if(textArea.value){
+        valueList.unshift(textArea.value)
+        saveData(textArea.value)
+        textArea.value = ''
+        valueListDom.innerHTML = showData(valueList)
+      }
+      
+    })
+
+    valueListDom.addEventListener('click', (e) => {
+      if(e.srcElement.innerText){
+        clipboardWriteText(e.srcElement.innerText)
+      }
+    })
+
+    // 整理数据
+    function showData(valueList) {
+      let html = ''
+      valueList.forEach((item, index) => {
+        let itemText = item.replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll(' ', '&nbsp;').replaceAll('\n', '<br>')
+        html += `<div class="value-item" data-index='${index}'>${itemText}</div>`
+      })
+      return html
+    }
+
+    // 读取粘贴板
+    function getClipboardData() {
+      navigator.clipboard.readText()
+        .then(text => {
+          textArea.value = text
+        })
+        .catch(err => {
+          console.error('Failed to read clipboard contents: ', err);
+        });
+    }
+
+    // 写入粘贴板
+    function clipboardWriteText(data) {
+      let rData = data.replaceAll(' ', ' ')
+      navigator.clipboard.writeText(rData)
+        .catch(err => {
+          console.error('Failed to read clipboard contents: ', err);
+        });
+    }
+
+    // 获取历史信息
+    function getData(){
+      fetch('/get_data',{
+        method:"post",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: ''
+      }).then(r=>r.json()).then(res=>{
+        valueList = [...valueList,...res.data]
+        valueListDom.innerHTML = showData(valueList)
+      })
+    }
+
+    // 记录
+    function saveData(data){
+      fetch('/set_data',{
+        method:"post",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({data})
+      }).then(r=>r.json()).then(res=>{
+        console.log(res)
+      })
+    }
+
+  </script>
+</body>
+
+</html>
