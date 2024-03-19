@@ -30,5 +30,14 @@ app.post('/set_data',(req,res)=>{
         
     })
 })
+
+app.get('/close',(req,res)=>{
+    res.json({
+        code:200
+    })
+    setTimeout(()=>{
+        process.exit(0)
+    },1000)
+})
 const port = 5656
 app.listen(port, () => console.log(`Example app listening on port ${port}! http://localhost:${port}`))

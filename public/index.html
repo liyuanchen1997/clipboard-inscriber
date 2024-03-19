@@ -51,12 +51,20 @@
       box-sizing: border-box;
       margin-bottom: 10px;
     }
+
+    .close-serve{
+      color: red;
+      font-size: 18px;
+      margin-left: 20px;
+      cursor: pointer;
+    }
   </style>
 </head>
 
 <body>
   <div class="tip">
     1. 右键获取粘贴板内容。2. 双击记录内容。3. 点击内容复制到粘贴板。
+    <span class="close-serve">点击关闭服务</span>
   </div>
   <div class="page-value">
     <textarea class="text-area"></textarea>
@@ -86,6 +94,16 @@
       if(e.srcElement.innerText){
         clipboardWriteText(e.srcElement.innerText)
       }
+    })
+
+    document.querySelector('.close-serve').addEventListener('click',()=>{
+      fetch('/close',{
+        method: 'get'
+      }).then(res=>{
+        if(res.ok){
+          window.close()
+        }
+      })
     })
 
     // 整理数据
